@@ -40,11 +40,11 @@
     }
     .logo-wrapper { display: flex; align-items: center; gap: 14px; }
     .logo-badge {
-      width: 54px; height: 54px; border-radius: 50%;
+      width: 62px; height: 62px; border-radius: 50%;
       background: var(--wit); display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.25); flex-shrink: 0; overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3); flex-shrink: 0; overflow: hidden;
     }
-    .logo-badge svg { width: 44px; height: 44px; }
+    .logo-badge svg { width: 60px; height: 60px; }
     .logo-text h1 { font-size: 1.25rem; font-weight: 800; letter-spacing: 0.3px; }
     .logo-text span { font-size: 0.75rem; color: rgba(255,255,255,0.78); letter-spacing: 0.8px; text-transform: uppercase; }
     .header-meta { font-size: 0.82rem; color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.1); padding: 6px 14px; border-radius: 20px; }
@@ -294,9 +294,8 @@
     /* Hoofd header */
     .bon-header { text-align: center; margin-bottom: 20px; }
     .bon-logo-ring {
-      width: 80px; height: 80px; border-radius: 50%;
-      background: var(--teal); display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 10px; font-size: 2.4rem; color: var(--wit);
+      width: 90px; height: 90px; border-radius: 50%;
+      margin: 0 auto 10px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
     .bon-bedrijfsnaam { font-size: 1.4rem; font-weight: 800; color: var(--teal-donker); margin-bottom: 4px; }
@@ -356,6 +355,27 @@
     .bon-ordernr { float: right; text-align: right; }
     .bon-ordernr-waarde { font-size: 1.1rem; font-weight: 800; color: var(--teal-donker); }
 
+    /* ===== ROUTE VANDAAG KAARTEN ===== */
+    .route-lijst { list-style: none; }
+    .route-item {
+      display: flex; align-items: flex-start; gap: 16px;
+      padding: 14px 20px; border-bottom: 1px solid var(--grijs);
+      transition: background 0.15s;
+    }
+    .route-item:last-child { border-bottom: none; }
+    .route-item:hover { background: #fff8f8; }
+    .route-tijd {
+      font-size: 1.4rem; font-weight: 800; color: var(--rood);
+      min-width: 60px; line-height: 1.1;
+    }
+    .route-tijd small { display: block; font-size: 0.68rem; font-weight: 600; color: #aaa; text-transform: uppercase; }
+    .route-info { flex: 1; }
+    .route-naam { font-size: 1rem; font-weight: 700; color: var(--tekst); }
+    .route-adres { font-size: 0.85rem; color: var(--tekst-zacht); margin-top: 2px; }
+    .route-producten { font-size: 0.78rem; color: var(--teal); margin-top: 4px; font-weight: 600; }
+    .route-notitie { font-size: 0.76rem; color: #c0392b; margin-top: 3px; font-style: italic; }
+    .route-acties { display: flex; flex-direction: column; gap: 5px; }
+
     @media print {
       body { background: white; }
       .header, .nav, .print-verberg { display: none !important; }
@@ -378,10 +398,23 @@
   <div class="header-top">
     <div class="logo-wrapper">
       <div class="logo-badge">
-        <!-- Eenvoudig Weideland logo -->
-        <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="22" cy="22" r="22" fill="#2a7070"/>
-          <text x="22" y="28" text-anchor="middle" font-size="20" fill="white">🌿</text>
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <path id="at" d="M 20,60 A 40,40 0 0,1 100,60"/>
+            <path id="ab" d="M 24,70 A 40,40 0 0,0 96,70"/>
+          </defs>
+          <circle cx="60" cy="60" r="59" fill="white"/>
+          <circle cx="60" cy="60" r="56" fill="#2a7070"/>
+          <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+          <polygon points="60,28 32,62 88,62" fill="none" stroke="white" stroke-width="2.5" stroke-linejoin="round"/>
+          <rect x="36" y="62" width="48" height="22" fill="none" stroke="white" stroke-width="2"/>
+          <rect x="51" y="66" width="18" height="18" rx="1" fill="rgba(255,255,255,0.18)"/>
+          <text font-size="12" font-weight="bold" fill="white" font-family="Georgia,serif">
+            <textPath href="#at" startOffset="50%" text-anchor="middle">Weideland</textPath>
+          </text>
+          <text font-size="7.5" font-weight="bold" fill="rgba(255,255,255,0.88)" font-family="Arial,sans-serif" letter-spacing="1.5">
+            <textPath href="#ab" startOffset="50%" text-anchor="middle">PARTY VERHUUR</textPath>
+          </text>
         </svg>
       </div>
       <div class="logo-text">
@@ -404,6 +437,18 @@
   <!-- ===== DASHBOARD ===== -->
   <div class="pagina actief" id="pagina-dashboard">
     <div class="stats-grid" id="stats-grid"></div>
+
+    <!-- Route vandaag voor chauffeur -->
+    <div class="card" style="margin-bottom:20px;" id="route-vandaag-card">
+      <div class="card-header" style="background:linear-gradient(135deg,#c0392b 0%,#e74c3c 100%);">
+        <h2>🚚 Route vandaag</h2>
+        <span id="route-datum-label" style="font-size:0.82rem;opacity:0.85;"></span>
+      </div>
+      <div class="card-body" style="padding:0;" id="route-vandaag-body">
+        <div class="leeg-staat"><div class="leeg-icoon">📭</div><p>Geen leveringen vandaag</p></div>
+      </div>
+    </div>
+
     <div class="card">
       <div class="card-header">
         <h2>📋 Recente Orders</h2>
@@ -569,6 +614,7 @@
             <span class="zoek-icoon">🔍</span>
           </div>
           <button class="btn btn-teal" onclick="openProductModal()">➕ Nieuw product</button>
+          <button class="btn btn-outline btn-klein" onclick="herstelProducten()" title="Zet alle producten terug naar standaard">↩️ Herstel standaard</button>
         </div>
       </div>
       <div class="card-body">
@@ -685,32 +731,48 @@ function slaOrdersOp(o) { localStorage.setItem(ORDERS_KEY, JSON.stringify(o)); }
 //  STANDAARD PRODUCTEN – gebaseerd op echte orderbon Weideland
 // ============================================================
 const STANDAARD_PRODUCTEN = [
-  // Materiaal & Apparatuur
-  { id:'p01', naam:'Partytent 5x4',                         categorie:'Materiaal & Apparatuur',    prijs:0,    eenheid:'per dag', icoon:'⛺', beschrijving:'Partytent 5 bij 4 meter' },
-  { id:'p02', naam:'Partytent 5x10',                        categorie:'Materiaal & Apparatuur',    prijs:0,    eenheid:'per dag', icoon:'🎪', beschrijving:'Grote partytent 5 bij 10 meter' },
-  { id:'p03', naam:'Prik verlichting warm wit (10 meter)',   categorie:'Materiaal & Apparatuur',    prijs:0,    eenheid:'per stuk',icoon:'💡', beschrijving:'Prik verlichting warm wit per 10 meter' },
-  { id:'p04', naam:'Elektrische heater',                    categorie:'Materiaal & Apparatuur',    prijs:0,    eenheid:'per dag', icoon:'🔥', beschrijving:'Elektrische heater / warmtekannon' },
-  { id:'p05', naam:'Biersettafel',                          categorie:'Materiaal & Apparatuur',    prijs:0,    eenheid:'per stuk',icoon:'🪑', beschrijving:'Biersettafel met 2 bankjes' },
-  { id:'p06', naam:'Biertap',                               categorie:'Materiaal & Apparatuur',    prijs:0,    eenheid:'per dag', icoon:'🍺', beschrijving:'Complete biertap met koeling' },
-  { id:'p07', naam:'Koelkast',                              categorie:'Materiaal & Apparatuur',    prijs:0,    eenheid:'per dag', icoon:'🧊', beschrijving:'Koelkast voor dranken' },
-  { id:'p08', naam:'BBQ',                                   categorie:'Materiaal & Apparatuur',    prijs:0,    eenheid:'per dag', icoon:'🍖', beschrijving:'Barbecue' },
-  { id:'p09', naam:'Partytent 3x3',                         categorie:'Materiaal & Apparatuur',    prijs:0,    eenheid:'per dag', icoon:'⛺', beschrijving:'Kleine partytent 3 bij 3 meter' },
-  { id:'p10', naam:'Partytent 4x6',                         categorie:'Materiaal & Apparatuur',    prijs:0,    eenheid:'per dag', icoon:'⛺', beschrijving:'Partytent 4 bij 6 meter' },
-  { id:'p11', naam:'Zijwand tent',                          categorie:'Materiaal & Apparatuur',    prijs:0,    eenheid:'per stuk',icoon:'🪟', beschrijving:'Zijwand passend bij partytent' },
-  { id:'p12', naam:'Statafel',                              categorie:'Materiaal & Apparatuur',    prijs:0,    eenheid:'per stuk',icoon:'🍹', beschrijving:'Hoge statafel' },
-  { id:'p13', naam:'Warmtekannon 9kW',                      categorie:'Materiaal & Apparatuur',    prijs:0,    eenheid:'per dag', icoon:'♨️', beschrijving:'Elektrisch warmtekannon 9kW' },
-  { id:'p14', naam:'Terrasheater',                          categorie:'Materiaal & Apparatuur',    prijs:0,    eenheid:'per dag', icoon:'🔆', beschrijving:'Staande terrasheater' },
-  { id:'p15', naam:'Dansvloer 4x4m',                        categorie:'Materiaal & Apparatuur',    prijs:0,    eenheid:'per dag', icoon:'🕺', beschrijving:'Houten dansvloer 4 bij 4 meter' },
-  // Dranken, Servies & Eten
-  { id:'p20', naam:'Fust bier 20 liter',                    categorie:'Dranken, Servies & Eten',   prijs:0,    eenheid:'per fust',icoon:'🍺', beschrijving:'Fust bier 20 liter' },
-  { id:'p21', naam:'Fust bier 50 liter',                    categorie:'Dranken, Servies & Eten',   prijs:0,    eenheid:'per fust',icoon:'🍺', beschrijving:'Fust bier 50 liter' },
-  { id:'p22', naam:'Borden',                                categorie:'Dranken, Servies & Eten',   prijs:0,    eenheid:'per stuk',icoon:'🍽️', beschrijving:'Porseleinen dinerborden' },
-  { id:'p23', naam:'Wijn glazen',                           categorie:'Dranken, Servies & Eten',   prijs:0,    eenheid:'per stuk',icoon:'🍷', beschrijving:'Wijnglazen' },
-  { id:'p24', naam:'Bier glazen',                           categorie:'Dranken, Servies & Eten',   prijs:0,    eenheid:'per stuk',icoon:'🍺', beschrijving:'Bierglazen' },
-  { id:'p25', naam:'Longdrink glazen',                      categorie:'Dranken, Servies & Eten',   prijs:0,    eenheid:'per stuk',icoon:'🥤', beschrijving:'Longdrink glazen' },
-  { id:'p26', naam:'Saté + wat besproken is',               categorie:'Dranken, Servies & Eten',   prijs:0,    eenheid:'per set', icoon:'🍢', beschrijving:'Saté en overige afgesproken eten' },
-  { id:'p27', naam:'Champagne glazen',                      categorie:'Dranken, Servies & Eten',   prijs:0,    eenheid:'per stuk',icoon:'🥂', beschrijving:'Champagne fluiten' },
-  { id:'p28', naam:'Bestek set (per persoon)',              categorie:'Dranken, Servies & Eten',   prijs:0,    eenheid:'per set', icoon:'🍴', beschrijving:'Vork, mes en lepel per persoon' },
+  // ── Materiaal & Apparatuur ──────────────────────────────────
+  { id:'p01', naam:'Partytent 5x4',                       categorie:'Materiaal & Apparatuur', prijs:95.00,  eenheid:'per dag',     icoon:'⛺', beschrijving:'Partytent 5 bij 4 meter' },
+  { id:'p02', naam:'Partytent 5x10',                      categorie:'Materiaal & Apparatuur', prijs:175.00, eenheid:'per dag',     icoon:'🎪', beschrijving:'Grote partytent 5 bij 10 meter' },
+  { id:'p09', naam:'Partytent 3x3',                       categorie:'Materiaal & Apparatuur', prijs:45.00,  eenheid:'per dag',     icoon:'⛺', beschrijving:'Kleine partytent 3 bij 3 meter' },
+  { id:'p10', naam:'Partytent 4x6',                       categorie:'Materiaal & Apparatuur', prijs:85.00,  eenheid:'per dag',     icoon:'⛺', beschrijving:'Partytent 4 bij 6 meter' },
+  { id:'p11', naam:'Zijwand tent',                        categorie:'Materiaal & Apparatuur', prijs:15.00,  eenheid:'per stuk',    icoon:'🪟', beschrijving:'Zijwand passend bij partytent' },
+  { id:'p03', naam:'Prik verlichting warm wit (10 meter)',categorie:'Materiaal & Apparatuur', prijs:8.00,   eenheid:'per stuk',    icoon:'💡', beschrijving:'Prik verlichting warm wit per 10 meter' },
+  { id:'p30', naam:'Lichtsnoer LED (5 meter)',            categorie:'Materiaal & Apparatuur', prijs:5.00,   eenheid:'per stuk',    icoon:'✨', beschrijving:'LED lichtsnoer 5 meter warm wit' },
+  { id:'p04', naam:'Elektrische heater',                  categorie:'Materiaal & Apparatuur', prijs:30.00,  eenheid:'per dag',     icoon:'🔥', beschrijving:'Elektrische heater / warmtekannon' },
+  { id:'p13', naam:'Warmtekannon 9kW',                    categorie:'Materiaal & Apparatuur', prijs:30.00,  eenheid:'per dag',     icoon:'♨️', beschrijving:'Elektrisch warmtekannon 9kW' },
+  { id:'p14', naam:'Terrasheater',                        categorie:'Materiaal & Apparatuur', prijs:22.00,  eenheid:'per dag',     icoon:'🔆', beschrijving:'Staande terrasheater met gasfles' },
+  { id:'p05', naam:'Biersettafel',                        categorie:'Materiaal & Apparatuur', prijs:15.00,  eenheid:'per stuk',    icoon:'🪑', beschrijving:'Biersettafel met 2 bankjes' },
+  { id:'p12', naam:'Statafel',                            categorie:'Materiaal & Apparatuur', prijs:8.00,   eenheid:'per stuk',    icoon:'🍹', beschrijving:'Hoge statafel hoogte 110cm' },
+  { id:'p31', naam:'Klaptafel 183cm',                     categorie:'Materiaal & Apparatuur', prijs:7.00,   eenheid:'per dag',     icoon:'🍽️', beschrijving:'Rechthoekige klaptafel 183x76cm' },
+  { id:'p32', naam:'Ronde tafel 120cm',                   categorie:'Materiaal & Apparatuur', prijs:9.00,   eenheid:'per dag',     icoon:'⭕', beschrijving:'Ronde tafel 120cm doorsnede' },
+  { id:'p33', naam:'Klapstoel wit',                       categorie:'Materiaal & Apparatuur', prijs:1.50,   eenheid:'per stuk',    icoon:'💺', beschrijving:'Witte kunststof klapstoel' },
+  { id:'p34', naam:'Klapstoel zwart',                     categorie:'Materiaal & Apparatuur', prijs:1.50,   eenheid:'per stuk',    icoon:'💺', beschrijving:'Zwarte kunststof klapstoel' },
+  { id:'p35', naam:'Barkruk',                             categorie:'Materiaal & Apparatuur', prijs:3.50,   eenheid:'per stuk',    icoon:'🪑', beschrijving:'Hoge barkruk passend bij statafel' },
+  { id:'p06', naam:'Biertap complete set',                categorie:'Materiaal & Apparatuur', prijs:55.00,  eenheid:'per dag',     icoon:'🍺', beschrijving:'Complete biertap met koeling' },
+  { id:'p07', naam:'Koelkast 60L',                        categorie:'Materiaal & Apparatuur', prijs:25.00,  eenheid:'per dag',     icoon:'🧊', beschrijving:'Koelkast 60 liter voor dranken' },
+  { id:'p36', naam:'Koelbox 50L',                         categorie:'Materiaal & Apparatuur', prijs:8.00,   eenheid:'per dag',     icoon:'🧊', beschrijving:'Polyester koelbox 50 liter' },
+  { id:'p08', naam:'BBQ',                                 categorie:'Materiaal & Apparatuur', prijs:35.00,  eenheid:'per dag',     icoon:'🍖', beschrijving:'Barbecue houtskool' },
+  { id:'p37', naam:'Gasbarbecue',                         categorie:'Materiaal & Apparatuur', prijs:45.00,  eenheid:'per dag',     icoon:'🔥', beschrijving:'Gasbarbecue met regulator' },
+  { id:'p15', naam:'Dansvloer 4x4m',                      categorie:'Materiaal & Apparatuur', prijs:85.00,  eenheid:'per dag',     icoon:'🕺', beschrijving:'Houten dansvloer 4 bij 4 meter' },
+  { id:'p38', naam:'Partyvloer per m²',                   categorie:'Materiaal & Apparatuur', prijs:4.00,   eenheid:'per m²',      icoon:'⬛', beschrijving:'Dambord of houtlook vloer per m²' },
+  { id:'p39', naam:'Podiumdeel 2x1m',                     categorie:'Materiaal & Apparatuur', prijs:15.00,  eenheid:'per dag',     icoon:'🎭', beschrijving:'Podiumelement 2x1 meter' },
+  // ── Dranken, Servies & Eten ─────────────────────────────────
+  { id:'p20', naam:'Fust bier 20 liter',                  categorie:'Dranken, Servies & Eten', prijs:85.00,  eenheid:'per fust',   icoon:'🍺', beschrijving:'Fust bier 20 liter' },
+  { id:'p21', naam:'Fust bier 50 liter',                  categorie:'Dranken, Servies & Eten', prijs:175.00, eenheid:'per fust',   icoon:'🍺', beschrijving:'Fust bier 50 liter' },
+  { id:'p22', naam:'Borden',                              categorie:'Dranken, Servies & Eten', prijs:0.50,   eenheid:'per stuk',   icoon:'🍽️', beschrijving:'Porseleinen dinerborden' },
+  { id:'p40', naam:'Soepborden',                          categorie:'Dranken, Servies & Eten', prijs:0.50,   eenheid:'per stuk',   icoon:'🥣', beschrijving:'Porseleinen soepborden' },
+  { id:'p23', naam:'Wijn glazen',                         categorie:'Dranken, Servies & Eten', prijs:0.40,   eenheid:'per stuk',   icoon:'🍷', beschrijving:'Wijnglazen' },
+  { id:'p24', naam:'Bier glazen',                         categorie:'Dranken, Servies & Eten', prijs:0.40,   eenheid:'per stuk',   icoon:'🍺', beschrijving:'Bierglazen' },
+  { id:'p25', naam:'Longdrink glazen',                    categorie:'Dranken, Servies & Eten', prijs:0.40,   eenheid:'per stuk',   icoon:'🥤', beschrijving:'Longdrink glazen' },
+  { id:'p27', naam:'Champagne glazen',                    categorie:'Dranken, Servies & Eten', prijs:0.50,   eenheid:'per stuk',   icoon:'🥂', beschrijving:'Champagne fluiten' },
+  { id:'p28', naam:'Bestek set (per persoon)',            categorie:'Dranken, Servies & Eten', prijs:0.75,   eenheid:'per set',    icoon:'🍴', beschrijving:'Vork, mes en lepel per persoon' },
+  { id:'p26', naam:'Saté + wat besproken is',             categorie:'Dranken, Servies & Eten', prijs:0,      eenheid:'per set',    icoon:'🍢', beschrijving:'Saté en overige afgesproken eten' },
+  // ── Linnen & Decoratie ──────────────────────────────────────
+  { id:'p41', naam:'Tafelkleed wit 183cm',                categorie:'Linnen & Decoratie',      prijs:3.50,   eenheid:'per stuk',   icoon:'🤍', beschrijving:'Wit tafelkleed voor klaptafel' },
+  { id:'p42', naam:'Tafelkleed rond 120cm',               categorie:'Linnen & Decoratie',      prijs:4.00,   eenheid:'per stuk',   icoon:'⭕', beschrijving:'Wit tafelkleed voor ronde tafel' },
+  { id:'p43', naam:'Stoelhoes wit',                       categorie:'Linnen & Decoratie',      prijs:1.80,   eenheid:'per stuk',   icoon:'🪑', beschrijving:'Elegante witte stoelhoes' },
+  { id:'p44', naam:'Servet linnen (per 10)',               categorie:'Linnen & Decoratie',      prijs:2.00,   eenheid:'per set',    icoon:'🧻', beschrijving:'Linnen servetten set van 10' },
 ];
 
 // ============================================================
@@ -728,7 +790,26 @@ let bevestigCallback = null;
 function init() {
   document.getElementById('hdr-datum').textContent =
     new Date().toLocaleDateString('nl-NL', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
-  if (laadProducten().length === 0) slaProductenOp(STANDAARD_PRODUCTEN);
+
+  // Laad standaard producten; migreer prijzen voor bestaande producten met prijs=0
+  let producten = laadProducten();
+  if (!producten.length) {
+    slaProductenOp(STANDAARD_PRODUCTEN);
+  } else {
+    let gewijzigd = false;
+    producten = producten.map(p => {
+      if (p.prijs === 0) {
+        const std = STANDAARD_PRODUCTEN.find(s => s.id === p.id);
+        if (std && std.prijs > 0) { gewijzigd = true; return { ...p, prijs: std.prijs }; }
+      }
+      return p;
+    });
+    STANDAARD_PRODUCTEN.forEach(s => {
+      if (!producten.find(p => p.id === s.id)) { producten.push(s); gewijzigd = true; }
+    });
+    if (gewijzigd) slaProductenOp(producten);
+  }
+
   renderDashboard();
   renderBadge();
 }
@@ -762,12 +843,41 @@ function toonPagina(id) {
 function renderDashboard() {
   const orders = laadOrders();
   const vandaag = new Date().toISOString().split('T')[0];
+  const vandaagOrders = orders.filter(o => o.datumOphalen === vandaag);
+
   document.getElementById('stats-grid').innerHTML = `
     <div class="stat-card"><div class="stat-label">Totaal orders</div><div class="stat-waarde">${orders.length}</div></div>
     <div class="stat-card goud"><div class="stat-label">Nieuwe orders</div><div class="stat-waarde">${orders.filter(o=>o.status==='Nieuw').length}</div></div>
-    <div class="stat-card rood"><div class="stat-label">Ophalen vandaag</div><div class="stat-waarde">${orders.filter(o=>o.datumOphalen===vandaag).length}</div></div>
+    <div class="stat-card rood"><div class="stat-label">Ophalen vandaag</div><div class="stat-waarde">${vandaagOrders.length}</div></div>
     <div class="stat-card blauw"><div class="stat-label">Afgerond</div><div class="stat-waarde">${orders.filter(o=>o.status==='Afgerond').length}</div></div>
   `;
+
+  // Route vandaag voor chauffeur
+  document.getElementById('route-datum-label').textContent =
+    new Date().toLocaleDateString('nl-NL', { weekday:'long', day:'numeric', month:'long' });
+  const routeBody = document.getElementById('route-vandaag-body');
+  const gesorteerd = [...vandaagOrders].sort((a,b)=>(a.tijdOphalen||'').localeCompare(b.tijdOphalen||''));
+  if (!gesorteerd.length) {
+    document.getElementById('route-vandaag-card').style.display = 'none';
+  } else {
+    document.getElementById('route-vandaag-card').style.display = '';
+    routeBody.innerHTML = `<ul class="route-lijst">${gesorteerd.map(o=>`
+      <li class="route-item">
+        <div class="route-tijd">${o.tijdOphalen||'–'}<small>ophalen</small></div>
+        <div class="route-info">
+          <div class="route-naam">${o.klant.voornaam} ${o.klant.achternaam} &nbsp;
+            <span style="font-size:0.78rem;font-weight:400;color:var(--tekst-zacht);">📞 ${o.klant.telefoon}</span>
+          </div>
+          <div class="route-adres">📍 ${o.klant.straat}, ${o.klant.postcode} <strong>${o.klant.stad}</strong></div>
+          <div class="route-producten">📦 ${o.producten.length} artikel${o.producten.length!==1?'en':''}: ${o.producten.slice(0,3).map(p=>`${p.aantal}× ${p.naam}`).join(', ')}${o.producten.length>3?' …':''}</div>
+          ${o.notities?`<div class="route-notitie">⚠️ ${o.notities}</div>`:''}
+        </div>
+        <div class="route-acties">
+          <button class="btn btn-teal btn-klein" onclick="toonOrderbon(${o.id})">🖨️ Bon</button>
+          <button class="btn btn-outline btn-klein" onclick="wijzigOrderStatus(${o.id},'Onderweg');renderDashboard();">🚚 Onderweg</button>
+        </div>
+      </li>`).join('')}</ul>`;
+  }
 
   const recente = [...orders].sort((a,b)=>b.aangemaakt-a.aangemaakt).slice(0,8);
   const tbody = document.getElementById('dashboard-orders-tbody');
@@ -1129,7 +1239,26 @@ function toonOrderbon(orderId) {
 
   document.getElementById('orderbon-inhoud').innerHTML = `
     <div class="bon-header">
-      <div class="bon-logo-ring">🌿</div>
+      <div class="bon-logo-ring">
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style="width:90px;height:90px;">
+          <defs>
+            <path id="bat" d="M 20,60 A 40,40 0 0,1 100,60"/>
+            <path id="bab" d="M 24,70 A 40,40 0 0,0 96,70"/>
+          </defs>
+          <circle cx="60" cy="60" r="59" fill="white"/>
+          <circle cx="60" cy="60" r="56" fill="#2a7070"/>
+          <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+          <polygon points="60,28 32,62 88,62" fill="none" stroke="white" stroke-width="2.5" stroke-linejoin="round"/>
+          <rect x="36" y="62" width="48" height="22" fill="none" stroke="white" stroke-width="2"/>
+          <rect x="51" y="66" width="18" height="18" rx="1" fill="rgba(255,255,255,0.18)"/>
+          <text font-size="12" font-weight="bold" fill="white" font-family="Georgia,serif">
+            <textPath href="#bat" startOffset="50%" text-anchor="middle">Weideland</textPath>
+          </text>
+          <text font-size="7.5" font-weight="bold" fill="rgba(255,255,255,0.88)" font-family="Arial,sans-serif" letter-spacing="1.5">
+            <textPath href="#bab" startOffset="50%" text-anchor="middle">PARTY VERHUUR</textPath>
+          </text>
+        </svg>
+      </div>
       <div class="bon-bedrijfsnaam">Partyverhuur Weideland V.O.F</div>
       <div class="bon-adres">Zuiderweg 3 &bull; 8395KV Steggerda &bull; 0621192946</div>
       <div class="bon-contact">info@verhuur-weideland.nl</div>
@@ -1377,6 +1506,14 @@ function toonBevestig(tekst, callback) {
 function sluitBevestig() { bevestigCallback=null; document.getElementById('bevestig-overlay').classList.remove('open'); }
 
 document.getElementById('bevestig-ok-btn').onclick=()=>{ if(bevestigCallback) bevestigCallback(); sluitBevestig(); };
+
+function herstelProducten() {
+  toonBevestig('Alle producten terugzetten naar standaard? Eigen toegevoegde producten worden verwijderd.', ()=>{
+    slaProductenOp(STANDAARD_PRODUCTEN);
+    toonToast('Producten hersteld naar standaard');
+    renderProductenBeheer();
+  });
+}
 document.querySelectorAll('.modal-overlay,.bevestig-overlay').forEach(el=>{
   el.addEventListener('click',e=>{ if(e.target===el) el.classList.remove('open'); });
 });
