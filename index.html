@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Partyverhuur Weideland – Ordersysteem</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f5f5; color: #1a3535; min-height: 100vh; }
+
+    :root {
+      --teal:        #2a7070;
+      --teal-donker: #1a4f4f;
+      --teal-licht:  #3a9090;
+      --teal-zacht:  #e8f4f4;
+      --goud:        #c8a84b;
+      --goud-licht:  #e8c870;
+      --wit:         #ffffff;
+      --lichtgrijs:  #f5f9f9;
+      --grijs:       #dde8e8;
+      --tekst:       #1a3535;
+      --tekst-zacht: #4a7070;
+      --rood:        #c0392b;
+      --rood-licht:  #e74c3c;
+      --blauw:       #2980b9;
+      --shadow:      0 2px 12px rgba(42,112,112,0.13);
+      --shadow-hover:0 4px 20px rgba(42,112,112,0.24);
+    }
+
+    /* ===== HEADER ===== */
+    .header {
+      background: linear-gradient(135deg, var(--teal-donker) 0%, var(--teal) 60%, var(--teal-licht) 100%);
+      color: var(--wit);
+      box-shadow: 0 3px 15px rgba(0,0,0,0.25);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .header-top {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 13px 24px; border-bottom: 1px solid rgba(255,255,255,0.15);
+    }
+    .logo-wrapper { display: flex; align-items: center; gap: 14px; }
+    .logo-badge {
+      width: 54px; height: 54px; border-radius: 50%;
+      background: var(--wit); display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25); flex-shrink: 0; overflow: hidden;
+    }
+    .logo-badge svg { width: 44px; height: 44px; }
+    .logo-text h1 { font-size: 1.25rem; font-weight: 800; letter-spacing: 0.3px; }
+    .logo-text span { font-size: 0.75rem; color: rgba(255,255,255,0.78); letter-spacing: 0.8px; text-transform: uppercase; }
+    .header-meta { font-size: 0.82rem; color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.1); padding: 6px 14px; border-radius: 20px; }
+
+    /* ===== NAV ===== */
+    .nav { display: flex; gap: 4px; padding: 8px 20px; overflow-x: auto; }
+    .nav-btn {
+      background: none; border: none; color: rgba(255,255,255,0.82);
+      padding: 8px 18px; border-radius: 6px; cursor: pointer; font-size: 0.9rem;
+      font-weight: 500; transition: all 0.2s; white-space: nowrap;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .nav-btn:hover { background: rgba(255,255,255,0.15); color: var(--wit); }
+    .nav-btn.actief { background: var(--goud); color: var(--teal-donker); font-weight: 700; }
+    .nav-btn .badge {
+      background: var(--rood); color: white; border-radius: 10px;
+      padding: 1px 7px; font-size: 0.72rem; font-weight: 700;
+    }
+    .nav-btn.actief .badge { background: var(--teal-donker); }
+
+    /* ===== MAIN ===== */
+    .main { max-width: 1200px; margin: 0 auto; padding: 24px 16px; }
+    .pagina { display: none; }
+    .pagina.actief { display: block; }
+
+    /* ===== KAARTEN ===== */
+    .card { background: var(--wit); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
+    .card-header {
+      background: linear-gradient(135deg, var(--teal) 0%, var(--teal-licht) 100%);
+      color: var(--wit); padding: 15px 20px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .card-header h2 { font-size: 1.05rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .card-body { padding: 20px; }
+
+    /* ===== KNOPPEN ===== */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 18px; border: none; border-radius: 8px; cursor: pointer;
+      font-size: 0.88rem; font-weight: 600; transition: all 0.2s; text-decoration: none;
+    }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-teal { background: var(--teal); color: var(--wit); }
+    .btn-teal:hover:not(:disabled) { background: var(--teal-licht); transform: translateY(-1px); box-shadow: var(--shadow-hover); }
+    .btn-goud { background: var(--goud); color: var(--teal-donker); }
+    .btn-goud:hover:not(:disabled) { background: var(--goud-licht); transform: translateY(-1px); }
+    .btn-rood { background: var(--rood); color: var(--wit); }
+    .btn-rood:hover:not(:disabled) { background: var(--rood-licht); transform: translateY(-1px); }
+    .btn-blauw { background: var(--blauw); color: var(--wit); }
+    .btn-blauw:hover:not(:disabled) { background: #3498db; transform: translateY(-1px); }
+    .btn-outline { background: none; border: 2px solid var(--teal); color: var(--teal); }
+    .btn-outline:hover { background: var(--teal); color: var(--wit); }
+    .btn-klein { padding: 5px 10px; font-size: 0.78rem; }
+    .btn-groot { padding: 12px 26px; font-size: 1rem; }
+
+    /* ===== FORMULIEREN ===== */
+    .form-groep { margin-bottom: 15px; }
+    .form-groep label { display: block; font-weight: 600; font-size: 0.82rem; color: var(--tekst-zacht); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-groep input, .form-groep select, .form-groep textarea {
+      width: 100%; padding: 10px 14px; border: 2px solid var(--grijs);
+      border-radius: 8px; font-size: 0.92rem; color: var(--tekst); transition: border-color 0.2s; background: var(--wit);
+    }
+    .form-groep input:focus, .form-groep select:focus, .form-groep textarea:focus {
+      outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px rgba(42,112,112,0.1);
+    }
+    .form-groep textarea { resize: vertical; min-height: 80px; }
+    .form-rij { display: grid; gap: 15px; }
+    .form-rij.col-2 { grid-template-columns: 1fr 1fr; }
+    .form-rij.col-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+    /* ===== DASHBOARD STATS ===== */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(175px,1fr)); gap: 15px; margin-bottom: 22px; }
+    .stat-card {
+      background: var(--wit); border-radius: 12px; padding: 18px;
+      box-shadow: var(--shadow); border-left: 5px solid var(--teal);
+    }
+    .stat-card.goud { border-left-color: var(--goud); }
+    .stat-card.rood { border-left-color: var(--rood); }
+    .stat-card.blauw { border-left-color: var(--blauw); }
+    .stat-label { font-size: 0.76rem; color: var(--tekst-zacht); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .stat-waarde { font-size: 2rem; font-weight: 700; color: var(--teal); line-height: 1; }
+    .stat-card.goud .stat-waarde { color: var(--goud); }
+    .stat-card.rood .stat-waarde { color: var(--rood); }
+    .stat-card.blauw .stat-waarde { color: var(--blauw); }
+
+    /* ===== ORDERS TABEL ===== */
+    .orders-tabel { width: 100%; border-collapse: collapse; }
+    .orders-tabel th {
+      background: var(--lichtgrijs); padding: 10px 14px; text-align: left;
+      font-size: 0.76rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+      color: var(--tekst-zacht); border-bottom: 2px solid var(--grijs);
+    }
+    .orders-tabel td { padding: 11px 14px; border-bottom: 1px solid var(--grijs); font-size: 0.88rem; vertical-align: middle; }
+    .orders-tabel tr:hover td { background: rgba(42,112,112,0.04); }
+    .orders-tabel .acties { display: flex; gap: 5px; flex-wrap: wrap; }
+
+    .badge-status { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; }
+    .badge-nieuw { background: #e3f2fd; color: #1565c0; }
+    .badge-bevestigd { background: #e0f2f1; color: #00695c; }
+    .badge-onderweg { background: #fff3e0; color: #e65100; }
+    .badge-geleverd { background: #e8f5e9; color: #2e7d32; }
+    .badge-opgehaald { background: #f3e5f5; color: #6a1b9a; }
+    .badge-afgerond { background: #dcedc8; color: #33691e; }
+
+    /* ===== PRODUCT SELECTIE ===== */
+    .producten-categorieen { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 14px; }
+    .cat-btn {
+      padding: 6px 14px; border: 2px solid var(--grijs); border-radius: 20px;
+      background: none; cursor: pointer; font-size: 0.82rem; font-weight: 600;
+      color: var(--tekst-zacht); transition: all 0.2s;
+    }
+    .cat-btn:hover { border-color: var(--teal); color: var(--teal); }
+    .cat-btn.actief { background: var(--teal); border-color: var(--teal); color: var(--wit); }
+
+    .producten-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(145px,1fr));
+      gap: 10px; max-height: 430px; overflow-y: auto; padding: 3px;
+    }
+    .product-tegel {
+      background: var(--wit); border: 2px solid var(--grijs); border-radius: 10px;
+      padding: 13px 9px; cursor: pointer; text-align: center; transition: all 0.2s;
+      user-select: none; display: flex; flex-direction: column; align-items: center; gap: 5px;
+    }
+    .product-tegel:hover { border-color: var(--teal); box-shadow: var(--shadow-hover); transform: translateY(-2px); }
+    .product-tegel.geselecteerd { border-color: var(--teal); background: var(--teal-zacht); }
+    .product-tegel.geselecteerd .tegel-naam { color: var(--teal); font-weight: 700; }
+    .tegel-icoon { font-size: 2rem; line-height: 1; }
+    .tegel-naam { font-size: 0.79rem; font-weight: 600; color: var(--tekst); line-height: 1.2; }
+    .tegel-prijs { font-size: 0.73rem; color: var(--tekst-zacht); }
+    .tegel-aantal {
+      background: var(--teal); color: var(--wit); border-radius: 50%;
+      width: 26px; height: 26px; display: flex; align-items: center;
+      justify-content: center; font-size: 0.85rem; font-weight: 700; margin-top: 2px;
+    }
+
+    /* ===== ORDER LAYOUT ===== */
+    .order-layout { display: grid; grid-template-columns: 1fr 350px; gap: 18px; align-items: start; }
+    @media (max-width: 900px) { .order-layout { grid-template-columns: 1fr; } }
+
+    .mand-sectie { position: sticky; top: 118px; }
+    .mand-items { list-style: none; max-height: 360px; overflow-y: auto; }
+    .mand-item { display: flex; align-items: center; gap: 9px; padding: 9px 0; border-bottom: 1px solid var(--grijs); }
+    .mand-item:last-child { border-bottom: none; }
+    .mand-item-naam { flex: 1; font-size: 0.86rem; font-weight: 600; }
+    .mand-item-prijs { font-size: 0.8rem; color: var(--tekst-zacht); }
+    .aantal-control { display: flex; align-items: center; gap: 3px; background: var(--lichtgrijs); border-radius: 20px; padding: 2px; }
+    .aantal-btn {
+      width: 26px; height: 26px; border: none; border-radius: 50%;
+      background: var(--teal); color: var(--wit); cursor: pointer;
+      font-size: 1rem; display: flex; align-items: center; justify-content: center;
+      font-weight: 700; transition: background 0.15s;
+    }
+    .aantal-btn:hover { background: var(--teal-licht); }
+    .aantal-btn.min { background: var(--rood); }
+    .aantal-btn.min:hover { background: var(--rood-licht); }
+    .aantal-waarde { min-width: 28px; text-align: center; font-weight: 700; font-size: 0.9rem; }
+    .mand-totaal { display: flex; justify-content: space-between; align-items: center; padding: 11px 0; border-top: 2px solid var(--teal); margin-top: 7px; font-weight: 700; }
+    .mand-leeg { text-align: center; padding: 20px; color: var(--tekst-zacht); font-size: 0.86rem; }
+
+    /* ===== STAPPEN WIZARD ===== */
+    .stappen { display: flex; margin-bottom: 24px; }
+    .stap { flex: 1; display: flex; align-items: center; }
+    .stap-cirkel {
+      width: 34px; height: 34px; border-radius: 50%; background: var(--grijs);
+      color: var(--tekst-zacht); display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.9rem; flex-shrink: 0; transition: all 0.3s;
+    }
+    .stap.actief .stap-cirkel { background: var(--teal); color: var(--wit); }
+    .stap.klaar .stap-cirkel { background: var(--goud); color: var(--teal-donker); }
+    .stap-label { font-size: 0.8rem; color: var(--tekst-zacht); margin-left: 8px; font-weight: 500; white-space: nowrap; }
+    .stap.actief .stap-label { color: var(--teal); font-weight: 700; }
+    .stap-lijn { flex: 1; height: 2px; background: var(--grijs); margin: 0 8px; }
+    .stap.klaar .stap-lijn { background: var(--goud); }
+
+    /* ===== PRODUCTBEHEER ===== */
+    .producten-beheer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(255px,1fr)); gap: 15px; }
+    .product-beheer-kaart {
+      background: var(--wit); border-radius: 10px; box-shadow: var(--shadow);
+      overflow: hidden; border: 1px solid var(--grijs); transition: box-shadow 0.2s;
+    }
+    .product-beheer-kaart:hover { box-shadow: var(--shadow-hover); }
+    .product-beheer-top {
+      background: linear-gradient(135deg, var(--teal) 0%, var(--teal-licht) 100%);
+      padding: 14px; display: flex; align-items: center; gap: 11px;
+    }
+    .product-beheer-icoon { font-size: 2.1rem; }
+    .product-beheer-naam { color: var(--wit); font-weight: 700; font-size: 0.95rem; }
+    .product-beheer-cat { color: rgba(255,255,255,0.75); font-size: 0.76rem; }
+    .product-beheer-body { padding: 13px; }
+    .product-beheer-prijs { font-size: 1.05rem; font-weight: 700; color: var(--teal); }
+    .product-beheer-eenheid { font-size: 0.76rem; color: var(--tekst-zacht); }
+    .product-beheer-acties { display: flex; gap: 7px; margin-top: 10px; }
+
+    /* ===== MODAL ===== */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+      z-index: 500; align-items: center; justify-content: center; padding: 16px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal { background: var(--wit); border-radius: 14px; width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+    .modal-header { background: linear-gradient(135deg, var(--teal-donker) 0%, var(--teal) 100%); color: var(--wit); padding: 17px 22px; display: flex; align-items: center; justify-content: space-between; }
+    .modal-header h3 { font-size: 1.05rem; font-weight: 700; }
+    .modal-sluit { background: none; border: none; color: var(--wit); font-size: 1.5rem; cursor: pointer; line-height: 1; padding: 0 4px; opacity: 0.8; }
+    .modal-sluit:hover { opacity: 1; }
+    .modal-body { padding: 22px; }
+    .modal-footer { padding: 15px 22px; border-top: 1px solid var(--grijs); display: flex; justify-content: flex-end; gap: 10px; }
+
+    /* ===== ZOEKBALK ===== */
+    .zoek-wrapper { position: relative; max-width: 300px; }
+    .zoek-wrapper input { width: 100%; padding: 8px 34px 8px 13px; border: 2px solid var(--grijs); border-radius: 20px; font-size: 0.86rem; transition: border-color 0.2s; }
+    .zoek-wrapper input:focus { outline: none; border-color: var(--teal); }
+    .zoek-icoon { position: absolute; right: 11px; top: 50%; transform: translateY(-50%); color: var(--tekst-zacht); pointer-events: none; }
+
+    /* ===== TOAST ===== */
+    .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+    .toast { background: var(--teal); color: var(--wit); padding: 11px 18px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); font-size: 0.86rem; font-weight: 600; animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards; max-width: 300px; }
+    .toast.fout { background: var(--rood); }
+    @keyframes slideIn { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; transform: translateX(20px); } }
+
+    /* ===== LEEG STAAT ===== */
+    .leeg-staat { text-align: center; padding: 42px 20px; color: var(--tekst-zacht); }
+    .leeg-staat .leeg-icoon { font-size: 3.5rem; margin-bottom: 10px; }
+    .leeg-staat p { font-size: 0.9rem; margin-bottom: 14px; }
+
+    /* ===== BEVESTIGING ===== */
+    .bevestig-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 600; align-items: center; justify-content: center; }
+    .bevestig-overlay.open { display: flex; }
+    .bevestig-box { background: var(--wit); border-radius: 14px; padding: 28px; max-width: 380px; width: 90%; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+    .bevestig-box h3 { margin-bottom: 10px; color: var(--rood); }
+    .bevestig-box p { color: var(--tekst-zacht); font-size: 0.9rem; margin-bottom: 20px; }
+    .bevestig-knoppen { display: flex; gap: 10px; justify-content: center; }
+
+    /* ===== SCROLLBAR ===== */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--lichtgrijs); }
+    ::-webkit-scrollbar-thumb { background: var(--teal); border-radius: 3px; }
+
+    /* ================================================================
+       ORDERBON PRINT STIJL
+    ================================================================ */
+    .orderbon-wrap {
+      background: #fff; border: 1px solid #ccc; border-radius: 10px;
+      padding: 28px; max-width: 720px; margin: 0 auto; font-family: Arial, sans-serif;
+    }
+
+    /* Hoofd header */
+    .bon-header { text-align: center; margin-bottom: 20px; }
+    .bon-logo-ring {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: var(--teal); display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 10px; font-size: 2.4rem; color: var(--wit);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .bon-bedrijfsnaam { font-size: 1.4rem; font-weight: 800; color: var(--teal-donker); margin-bottom: 4px; }
+    .bon-adres { font-size: 0.85rem; color: #555; margin-bottom: 2px; }
+    .bon-contact { font-size: 0.85rem; color: var(--teal); }
+
+    .bon-titel {
+      text-align: center; font-size: 1.3rem; font-weight: 900;
+      letter-spacing: 3px; color: var(--teal-donker);
+      border-top: 2px solid var(--teal); border-bottom: 2px solid var(--teal);
+      padding: 8px 0; margin: 16px 0;
+    }
+
+    /* Klantgegevens box */
+    .bon-klant-box {
+      display: grid; grid-template-columns: 1fr 1fr; border: 1px solid #999;
+      margin-bottom: 18px; font-size: 0.88rem;
+    }
+    .bon-klant-cel {
+      padding: 7px 10px; border: 1px solid #ccc;
+    }
+    .bon-klant-label { font-weight: 700; margin-right: 6px; }
+    .bon-klant-waarde { border-bottom: 1px solid #aaa; display: inline-block; min-width: 140px; }
+
+    /* Producten tabel */
+    .bon-tabel { width: 100%; border-collapse: collapse; font-size: 0.86rem; margin-bottom: 18px; }
+    .bon-tabel th {
+      background: var(--teal); color: #fff; padding: 8px 10px;
+      text-align: left; font-weight: 700; font-size: 0.84rem;
+    }
+    .bon-tabel th.center { text-align: center; }
+    .bon-tabel td { padding: 7px 10px; border-bottom: 1px solid #ddd; vertical-align: middle; }
+    .bon-tabel td.center { text-align: center; }
+    .bon-tabel td.aantal-col { font-weight: 800; font-size: 0.95rem; color: var(--teal); }
+    .bon-cat-rij td {
+      background: #f0f8f8; color: var(--teal); font-style: italic; font-weight: 700;
+      font-size: 0.82rem; padding: 5px 10px; border-bottom: 1px solid #ccc;
+    }
+    .bon-checkbox {
+      width: 16px; height: 16px; border: 1.5px solid #666;
+      display: inline-block; border-radius: 2px; vertical-align: middle;
+    }
+
+    /* Opmerkingen */
+    .bon-opmerkingen-titel { font-size: 1.05rem; font-weight: 800; color: var(--teal); margin-bottom: 6px; }
+    .bon-opmerkingen-lijn { border-bottom: 1px solid #bbb; margin-bottom: 10px; height: 24px; }
+
+    /* Handtekeningen */
+    .bon-handtekening-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px; }
+    .bon-handtekening-vak { border: 1px solid #999; padding: 6px 10px; font-size: 0.82rem; font-weight: 700; }
+    .bon-handtekening-lijn { border-bottom: 1px solid #aaa; margin-top: 30px; }
+
+    /* Footer bon */
+    .bon-footer { text-align: center; margin-top: 20px; font-size: 0.78rem; color: #666; font-style: italic; }
+
+    /* Ordernummer badge */
+    .bon-ordernr { float: right; text-align: right; }
+    .bon-ordernr-waarde { font-size: 1.1rem; font-weight: 800; color: var(--teal-donker); }
+
+    @media print {
+      body { background: white; }
+      .header, .nav, .print-verberg { display: none !important; }
+      .main { padding: 0; max-width: 100%; }
+      .pagina { display: none !important; }
+      #pagina-bon { display: block !important; }
+      .orderbon-wrap { border: none; padding: 10px; box-shadow: none; max-width: 100%; }
+      .btn { display: none !important; }
+    }
+    @media (max-width: 600px) {
+      .form-rij.col-2, .form-rij.col-3 { grid-template-columns: 1fr; }
+      .stap-label { display: none; }
+      .bon-klant-box { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-top">
+    <div class="logo-wrapper">
+      <div class="logo-badge">
+        <!-- Eenvoudig Weideland logo -->
+        <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="22" cy="22" r="22" fill="#2a7070"/>
+          <text x="22" y="28" text-anchor="middle" font-size="20" fill="white">🌿</text>
+        </svg>
+      </div>
+      <div class="logo-text">
+        <h1>Partyverhuur Weideland V.O.F</h1>
+        <span>Zuiderweg 3 · 8395KV Steggerda · 0621192946</span>
+      </div>
+    </div>
+    <div class="header-meta" id="hdr-datum"></div>
+  </div>
+  <nav class="nav">
+    <button class="nav-btn actief" onclick="toonPagina('dashboard')">📊 Dashboard</button>
+    <button class="nav-btn" onclick="toonPagina('nieuwe-order')">➕ Nieuwe Order</button>
+    <button class="nav-btn" onclick="toonPagina('orders')">📋 Alle Orders <span class="badge" id="badge-orders">0</span></button>
+    <button class="nav-btn" onclick="toonPagina('producten')">📦 Producten</button>
+  </nav>
+</header>
+
+<div class="main">
+
+  <!-- ===== DASHBOARD ===== -->
+  <div class="pagina actief" id="pagina-dashboard">
+    <div class="stats-grid" id="stats-grid"></div>
+    <div class="card">
+      <div class="card-header">
+        <h2>📋 Recente Orders</h2>
+        <button class="btn btn-teal btn-klein" onclick="toonPagina('nieuwe-order')">➕ Nieuwe order</button>
+      </div>
+      <div class="card-body" style="padding:0;overflow-x:auto;">
+        <table class="orders-tabel">
+          <thead><tr><th>#</th><th>Klant</th><th>Datum ophalen</th><th>Adres</th><th>Status</th><th>Acties</th></tr></thead>
+          <tbody id="dashboard-orders-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== NIEUWE ORDER ===== -->
+  <div class="pagina" id="pagina-nieuwe-order">
+    <div class="stappen" id="stappen-indicator">
+      <div class="stap actief" id="stap-1-indicator">
+        <div class="stap-cirkel">1</div><span class="stap-label">Klantgegevens</span><div class="stap-lijn"></div>
+      </div>
+      <div class="stap" id="stap-2-indicator">
+        <div class="stap-cirkel">2</div><span class="stap-label">Producten</span><div class="stap-lijn"></div>
+      </div>
+      <div class="stap" id="stap-3-indicator">
+        <div class="stap-cirkel">3</div><span class="stap-label">Bevestigen</span>
+      </div>
+    </div>
+
+    <!-- STAP 1 -->
+    <div id="stap-1" class="card">
+      <div class="card-header"><h2>👤 Stap 1 – Klantgegevens</h2></div>
+      <div class="card-body">
+        <div class="form-rij col-2">
+          <div class="form-groep"><label>Voornaam *</label><input type="text" id="klant-voornaam" placeholder="Voornaam"/></div>
+          <div class="form-groep"><label>Achternaam *</label><input type="text" id="klant-achternaam" placeholder="Achternaam"/></div>
+        </div>
+        <div class="form-rij col-2">
+          <div class="form-groep"><label>Telefoonnummer *</label><input type="tel" id="klant-telefoon" placeholder="06-12345678"/></div>
+          <div class="form-groep"><label>E-mailadres</label><input type="email" id="klant-email" placeholder="naam@voorbeeld.nl"/></div>
+        </div>
+        <div class="form-rij col-3">
+          <div class="form-groep" style="grid-column:span 2"><label>Straat + Huisnummer *</label><input type="text" id="klant-straat" placeholder="Voorbeeldstraat 12"/></div>
+          <div class="form-groep"><label>Postcode *</label><input type="text" id="klant-postcode" placeholder="1234 AB"/></div>
+        </div>
+        <div class="form-groep"><label>Woonplaats *</label><input type="text" id="klant-stad" placeholder="Woonplaats"/></div>
+        <hr style="border:1px solid var(--grijs);margin:14px 0">
+        <div class="form-rij col-2">
+          <div class="form-groep"><label>Datum ophalen *</label><input type="date" id="order-datum-ophalen"/></div>
+          <div class="form-groep"><label>Tijdstip ophalen</label><input type="time" id="order-tijd-ophalen" value="09:00"/></div>
+        </div>
+        <div class="form-rij col-2">
+          <div class="form-groep"><label>Datum terugbrengen</label><input type="date" id="order-datum-terugbrengen"/></div>
+          <div class="form-groep"><label>Tijdstip terugbrengen</label><input type="time" id="order-tijd-terugbrengen" value="18:00"/></div>
+        </div>
+        <div class="form-groep">
+          <label>Gelegenheid / Type evenement</label>
+          <select id="order-type">
+            <option value="">Selecteer type...</option>
+            <option>Verjaardag</option><option>Bruiloft</option><option>Bedrijfsfeest</option>
+            <option>Communiefeest</option><option>Tuinfeest</option><option>Barbecue</option>
+            <option>Kerstfeest</option><option>Jubileum</option><option>Anders</option>
+          </select>
+        </div>
+        <div class="form-groep"><label>Opmerkingen / Bijzonderheden (voor chauffeur)</label><textarea id="order-notities" placeholder="Bijzondere instructies voor chauffeur, opbouw-instructies, etc."></textarea></div>
+        <div style="display:flex;justify-content:flex-end;margin-top:6px;">
+          <button class="btn btn-teal btn-groot" onclick="naarStap2()">Volgende: Producten selecteren →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STAP 2 -->
+    <div id="stap-2" style="display:none;">
+      <div class="order-layout">
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <h2>📦 Stap 2 – Producten selecteren</h2>
+              <div class="zoek-wrapper">
+                <input type="text" id="product-zoek" placeholder="Zoek product..." oninput="filterProductenOrder()"/>
+                <span class="zoek-icoon">🔍</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="producten-categorieen" id="order-categorieen"></div>
+              <div class="producten-grid" id="order-producten-grid"></div>
+              <div style="display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;margin-top:12px;">
+                <button class="btn btn-outline" onclick="naarStap1()">← Terug</button>
+                <button class="btn btn-teal btn-groot" onclick="naarStap3()">Volgende: Overzicht →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mand-sectie">
+          <div class="card">
+            <div class="card-header"><h2>🛒 Geselecteerde artikelen</h2></div>
+            <div class="card-body" style="padding:13px;">
+              <ul class="mand-items" id="mand-items-lijst">
+                <li class="mand-leeg">Nog niets geselecteerd</li>
+              </ul>
+              <div class="mand-totaal" id="mand-totaal-rij" style="display:none;">
+                <span>Totaal:</span><span id="mand-totaal-bedrag">€ 0,00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STAP 3 -->
+    <div id="stap-3" style="display:none;">
+      <div class="card">
+        <div class="card-header"><h2>✅ Stap 3 – Controleren &amp; Bevestigen</h2></div>
+        <div class="card-body">
+          <div id="bevestig-samenvatting"></div>
+          <div style="display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;margin-top:18px;">
+            <button class="btn btn-outline" onclick="naarStap2()">← Terug</button>
+            <button class="btn btn-teal btn-groot" onclick="slaOrderOp()">✅ Order opslaan &amp; bon printen</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ALLE ORDERS ===== -->
+  <div class="pagina" id="pagina-orders">
+    <div class="card">
+      <div class="card-header">
+        <h2>📋 Alle Orders</h2>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <div class="zoek-wrapper">
+            <input type="text" id="orders-zoek" placeholder="Zoek klant..." oninput="renderOrdersTabel()"/>
+            <span class="zoek-icoon">🔍</span>
+          </div>
+          <select id="orders-filter-status" onchange="renderOrdersTabel()" style="padding:8px 12px;border:2px solid var(--grijs);border-radius:8px;font-size:0.85rem;cursor:pointer;">
+            <option value="">Alle statussen</option>
+            <option>Nieuw</option><option>Bevestigd</option><option>Onderweg</option>
+            <option>Geleverd</option><option>Opgehaald</option><option>Afgerond</option>
+          </select>
+          <button class="btn btn-teal btn-klein" onclick="toonPagina('nieuwe-order')">➕ Nieuwe order</button>
+        </div>
+      </div>
+      <div class="card-body" style="padding:0;overflow-x:auto;">
+        <table class="orders-tabel">
+          <thead><tr><th>#</th><th>Klant</th><th>Telefoon</th><th>Datum ophalen</th><th>Adres</th><th>Type evt.</th><th>Status</th><th>Acties</th></tr></thead>
+          <tbody id="orders-tbody"></tbody>
+        </table>
+        <div class="leeg-staat" id="orders-leeg" style="display:none;">
+          <div class="leeg-icoon">📭</div><p>Geen orders gevonden</p>
+          <button class="btn btn-teal" onclick="toonPagina('nieuwe-order')">Maak eerste order aan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PRODUCTEN BEHEER ===== -->
+  <div class="pagina" id="pagina-producten">
+    <div class="card">
+      <div class="card-header">
+        <h2>📦 Productbeheer</h2>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <div class="zoek-wrapper">
+            <input type="text" id="producten-zoek" placeholder="Zoek product..." oninput="renderProductenBeheer()"/>
+            <span class="zoek-icoon">🔍</span>
+          </div>
+          <button class="btn btn-teal" onclick="openProductModal()">➕ Nieuw product</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="producten-beheer-grid" id="producten-beheer-grid"></div>
+        <div class="leeg-staat" id="producten-leeg" style="display:none;">
+          <div class="leeg-icoon">📦</div><p>Geen producten gevonden</p>
+          <button class="btn btn-teal" onclick="openProductModal()">Voeg eerste product toe</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ORDERBON ===== -->
+  <div class="pagina" id="pagina-bon">
+    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;" class="print-verberg">
+      <button class="btn btn-outline" onclick="toonPagina('orders')">← Terug naar orders</button>
+      <button class="btn btn-teal" onclick="window.print()">🖨️ Afdrukken / PDF opslaan</button>
+    </div>
+    <div class="orderbon-wrap" id="orderbon-inhoud"></div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- PRODUCT MODAL -->
+<div class="modal-overlay" id="product-modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="product-modal-titel">Nieuw product toevoegen</h3>
+      <button class="modal-sluit" onclick="sluitModal('product-modal-overlay')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="product-modal-id"/>
+      <div class="form-rij col-2">
+        <div class="form-groep"><label>Productnaam *</label><input type="text" id="pm-naam" placeholder="bijv. Partytent 5x4"/></div>
+        <div class="form-groep">
+          <label>Categorie *</label>
+          <select id="pm-categorie">
+            <option value="">Kies categorie...</option>
+            <option>Materiaal &amp; Apparatuur</option>
+            <option>Dranken, Servies &amp; Eten</option>
+            <option>Tenten</option>
+            <option>Tafels &amp; Stoelen</option>
+            <option>Verlichting</option>
+            <option>Verwarming</option>
+            <option>Bar &amp; Koeling</option>
+            <option>Linnen &amp; Decoratie</option>
+            <option>Podium &amp; Techniek</option>
+            <option>Overig</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-rij col-3">
+        <div class="form-groep"><label>Prijs (€)</label><input type="number" id="pm-prijs" placeholder="0.00" step="0.01" min="0"/></div>
+        <div class="form-groep">
+          <label>Per eenheid</label>
+          <select id="pm-eenheid">
+            <option>per stuk</option><option>per dag</option><option>per weekend</option>
+            <option>per meter</option><option>per set</option><option>per fust</option>
+          </select>
+        </div>
+        <div class="form-groep"><label>Icoon (emoji)</label><input type="text" id="pm-icoon" placeholder="🎪" maxlength="4"/></div>
+      </div>
+      <div class="form-groep"><label>Beschrijving</label><textarea id="pm-beschrijving" rows="2" placeholder="Optionele omschrijving..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="sluitModal('product-modal-overlay')">Annuleren</button>
+      <button class="btn btn-teal" onclick="slaProductOp()">Opslaan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ORDER DETAIL MODAL -->
+<div class="modal-overlay" id="order-modal-overlay">
+  <div class="modal" style="max-width:680px;">
+    <div class="modal-header">
+      <h3 id="order-modal-titel">Order details</h3>
+      <button class="modal-sluit" onclick="sluitModal('order-modal-overlay')">✕</button>
+    </div>
+    <div class="modal-body" id="order-modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="sluitModal('order-modal-overlay')">Sluiten</button>
+      <button class="btn btn-blauw" id="order-modal-bon-btn">🖨️ Orderbon</button>
+    </div>
+  </div>
+</div>
+
+<!-- BEVESTIGING -->
+<div class="bevestig-overlay" id="bevestig-overlay">
+  <div class="bevestig-box">
+    <h3>⚠️ Weet je het zeker?</h3>
+    <p id="bevestig-tekst">Dit kan niet ongedaan worden gemaakt.</p>
+    <div class="bevestig-knoppen">
+      <button class="btn btn-outline" onclick="sluitBevestig()">Annuleren</button>
+      <button class="btn btn-rood" id="bevestig-ok-btn">Verwijderen</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+// ============================================================
+//  DATA
+// ============================================================
+const PRODUCTEN_KEY = 'weideland_producten';
+const ORDERS_KEY    = 'weideland_orders';
+
+function laadProducten() { return JSON.parse(localStorage.getItem(PRODUCTEN_KEY) || '[]'); }
+function slaProductenOp(p) { localStorage.setItem(PRODUCTEN_KEY, JSON.stringify(p)); }
+function laadOrders() { return JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]'); }
+function slaOrdersOp(o) { localStorage.setItem(ORDERS_KEY, JSON.stringify(o)); }
+
+// ============================================================
+//  STANDAARD PRODUCTEN – gebaseerd op echte orderbon Weideland
+// ============================================================
+const STANDAARD_PRODUCTEN = [
+  // Materiaal & Apparatuur
+  { id:'p01', naam:'Partytent 5x4',                         categorie:'Materiaal & Apparatuur',    prijs:0,    eenheid:'per dag', icoon:'⛺', beschrijving:'Partytent 5 bij 4 meter' },
+  { id:'p02', naam:'Partytent 5x10',                        categorie:'Materiaal & Apparatuur',    prijs:0,    eenheid:'per dag', icoon:'🎪', beschrijving:'Grote partytent 5 bij 10 meter' },
+  { id:'p03', naam:'Prik verlichting warm wit (10 meter)',   categorie:'Materiaal & Apparatuur',    prijs:0,    eenheid:'per stuk',icoon:'💡', beschrijving:'Prik verlichting warm wit per 10 meter' },
+  { id:'p04', naam:'Elektrische heater',                    categorie:'Materiaal & Apparatuur',    prijs:0,    eenheid:'per dag', icoon:'🔥', beschrijving:'Elektrische heater / warmtekannon' },
+  { id:'p05', naam:'Biersettafel',                          categorie:'Materiaal & Apparatuur',    prijs:0,    eenheid:'per stuk',icoon:'🪑', beschrijving:'Biersettafel met 2 bankjes' },
+  { id:'p06', naam:'Biertap',                               categorie:'Materiaal & Apparatuur',    prijs:0,    eenheid:'per dag', icoon:'🍺', beschrijving:'Complete biertap met koeling' },
+  { id:'p07', naam:'Koelkast',                              categorie:'Materiaal & Apparatuur',    prijs:0,    eenheid:'per dag', icoon:'🧊', beschrijving:'Koelkast voor dranken' },
+  { id:'p08', naam:'BBQ',                                   categorie:'Materiaal & Apparatuur',    prijs:0,    eenheid:'per dag', icoon:'🍖', beschrijving:'Barbecue' },
+  { id:'p09', naam:'Partytent 3x3',                         categorie:'Materiaal & Apparatuur',    prijs:0,    eenheid:'per dag', icoon:'⛺', beschrijving:'Kleine partytent 3 bij 3 meter' },
+  { id:'p10', naam:'Partytent 4x6',                         categorie:'Materiaal & Apparatuur',    prijs:0,    eenheid:'per dag', icoon:'⛺', beschrijving:'Partytent 4 bij 6 meter' },
+  { id:'p11', naam:'Zijwand tent',                          categorie:'Materiaal & Apparatuur',    prijs:0,    eenheid:'per stuk',icoon:'🪟', beschrijving:'Zijwand passend bij partytent' },
+  { id:'p12', naam:'Statafel',                              categorie:'Materiaal & Apparatuur',    prijs:0,    eenheid:'per stuk',icoon:'🍹', beschrijving:'Hoge statafel' },
+  { id:'p13', naam:'Warmtekannon 9kW',                      categorie:'Materiaal & Apparatuur',    prijs:0,    eenheid:'per dag', icoon:'♨️', beschrijving:'Elektrisch warmtekannon 9kW' },
+  { id:'p14', naam:'Terrasheater',                          categorie:'Materiaal & Apparatuur',    prijs:0,    eenheid:'per dag', icoon:'🔆', beschrijving:'Staande terrasheater' },
+  { id:'p15', naam:'Dansvloer 4x4m',                        categorie:'Materiaal & Apparatuur',    prijs:0,    eenheid:'per dag', icoon:'🕺', beschrijving:'Houten dansvloer 4 bij 4 meter' },
+  // Dranken, Servies & Eten
+  { id:'p20', naam:'Fust bier 20 liter',                    categorie:'Dranken, Servies & Eten',   prijs:0,    eenheid:'per fust',icoon:'🍺', beschrijving:'Fust bier 20 liter' },
+  { id:'p21', naam:'Fust bier 50 liter',                    categorie:'Dranken, Servies & Eten',   prijs:0,    eenheid:'per fust',icoon:'🍺', beschrijving:'Fust bier 50 liter' },
+  { id:'p22', naam:'Borden',                                categorie:'Dranken, Servies & Eten',   prijs:0,    eenheid:'per stuk',icoon:'🍽️', beschrijving:'Porseleinen dinerborden' },
+  { id:'p23', naam:'Wijn glazen',                           categorie:'Dranken, Servies & Eten',   prijs:0,    eenheid:'per stuk',icoon:'🍷', beschrijving:'Wijnglazen' },
+  { id:'p24', naam:'Bier glazen',                           categorie:'Dranken, Servies & Eten',   prijs:0,    eenheid:'per stuk',icoon:'🍺', beschrijving:'Bierglazen' },
+  { id:'p25', naam:'Longdrink glazen',                      categorie:'Dranken, Servies & Eten',   prijs:0,    eenheid:'per stuk',icoon:'🥤', beschrijving:'Longdrink glazen' },
+  { id:'p26', naam:'Saté + wat besproken is',               categorie:'Dranken, Servies & Eten',   prijs:0,    eenheid:'per set', icoon:'🍢', beschrijving:'Saté en overige afgesproken eten' },
+  { id:'p27', naam:'Champagne glazen',                      categorie:'Dranken, Servies & Eten',   prijs:0,    eenheid:'per stuk',icoon:'🥂', beschrijving:'Champagne fluiten' },
+  { id:'p28', naam:'Bestek set (per persoon)',              categorie:'Dranken, Servies & Eten',   prijs:0,    eenheid:'per set', icoon:'🍴', beschrijving:'Vork, mes en lepel per persoon' },
+];
+
+// ============================================================
+//  STAAT
+// ============================================================
+let huidigePagina  = 'dashboard';
+let orderMand      = {};
+let huidigOrderId  = null;
+let filterCategorie= 'Alle';
+let bevestigCallback = null;
+
+// ============================================================
+//  INIT
+// ============================================================
+function init() {
+  document.getElementById('hdr-datum').textContent =
+    new Date().toLocaleDateString('nl-NL', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  if (laadProducten().length === 0) slaProductenOp(STANDAARD_PRODUCTEN);
+  renderDashboard();
+  renderBadge();
+}
+
+// ============================================================
+//  NAVIGATIE
+// ============================================================
+function toonPagina(id) {
+  huidigePagina = id;
+  document.querySelectorAll('.pagina').forEach(p => p.classList.remove('actief'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('actief'));
+
+  const pMap = { dashboard:'pagina-dashboard', 'nieuwe-order':'pagina-nieuwe-order', orders:'pagina-orders', producten:'pagina-producten', bon:'pagina-bon' };
+  const el = document.getElementById(pMap[id]);
+  if (el) el.classList.add('actief');
+
+  const navIdx = ['dashboard','nieuwe-order','orders','producten'];
+  const ni = navIdx.indexOf(id);
+  if (ni >= 0) document.querySelectorAll('.nav-btn')[ni].classList.add('actief');
+
+  if (id === 'dashboard')    renderDashboard();
+  if (id === 'orders')       renderOrdersTabel();
+  if (id === 'producten')    renderProductenBeheer();
+  if (id === 'nieuwe-order') { resetNieuweOrder(); renderOrderProductenGrid(); }
+  window.scrollTo(0,0);
+}
+
+// ============================================================
+//  DASHBOARD
+// ============================================================
+function renderDashboard() {
+  const orders = laadOrders();
+  const vandaag = new Date().toISOString().split('T')[0];
+  document.getElementById('stats-grid').innerHTML = `
+    <div class="stat-card"><div class="stat-label">Totaal orders</div><div class="stat-waarde">${orders.length}</div></div>
+    <div class="stat-card goud"><div class="stat-label">Nieuwe orders</div><div class="stat-waarde">${orders.filter(o=>o.status==='Nieuw').length}</div></div>
+    <div class="stat-card rood"><div class="stat-label">Ophalen vandaag</div><div class="stat-waarde">${orders.filter(o=>o.datumOphalen===vandaag).length}</div></div>
+    <div class="stat-card blauw"><div class="stat-label">Afgerond</div><div class="stat-waarde">${orders.filter(o=>o.status==='Afgerond').length}</div></div>
+  `;
+
+  const recente = [...orders].sort((a,b)=>b.aangemaakt-a.aangemaakt).slice(0,8);
+  const tbody = document.getElementById('dashboard-orders-tbody');
+  if (!recente.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="leeg-staat"><div class="leeg-icoon">📭</div><p>Nog geen orders aangemaakt</p><button class="btn btn-teal" onclick="toonPagina('nieuwe-order')">Eerste order aanmaken</button></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = recente.map(o => `
+    <tr>
+      <td><strong>#${String(o.id).slice(-4).padStart(4,'0')}</strong></td>
+      <td>${o.klant.voornaam} ${o.klant.achternaam}</td>
+      <td>${formatDatum(o.datumOphalen)} ${o.tijdOphalen?'⏰ '+o.tijdOphalen:''}</td>
+      <td>${o.klant.straat}, ${o.klant.stad}</td>
+      <td><span class="badge-status badge-${o.status.toLowerCase()}">${o.status}</span></td>
+      <td><div class="acties">
+        <button class="btn btn-teal btn-klein" onclick="toonOrderbon(${o.id})">🖨️ Bon</button>
+        <button class="btn btn-blauw btn-klein" onclick="toonOrderDetail(${o.id})">👁️</button>
+      </div></td>
+    </tr>`).join('');
+}
+
+// ============================================================
+//  ORDERS TABEL
+// ============================================================
+function renderOrdersTabel() {
+  const zoek   = (document.getElementById('orders-zoek')?.value||'').toLowerCase();
+  const status = document.getElementById('orders-filter-status')?.value||'';
+  let orders = laadOrders();
+  if (zoek)   orders = orders.filter(o=>`${o.klant.voornaam} ${o.klant.achternaam} ${o.klant.stad}`.toLowerCase().includes(zoek));
+  if (status) orders = orders.filter(o=>o.status===status);
+  orders = [...orders].sort((a,b)=>(a.datumOphalen||'').localeCompare(b.datumOphalen||''));
+
+  const tbody = document.getElementById('orders-tbody');
+  const leeg  = document.getElementById('orders-leeg');
+  if (!orders.length) { tbody.innerHTML=''; leeg.style.display='block'; return; }
+  leeg.style.display = 'none';
+
+  const statussen = ['Nieuw','Bevestigd','Onderweg','Geleverd','Opgehaald','Afgerond'];
+  tbody.innerHTML = orders.map(o => `
+    <tr>
+      <td><strong>#${String(o.id).slice(-4).padStart(4,'0')}</strong></td>
+      <td>${o.klant.voornaam} ${o.klant.achternaam}</td>
+      <td>${o.klant.telefoon}</td>
+      <td>${formatDatum(o.datumOphalen)}<br><small>${o.tijdOphalen?'⏰ '+o.tijdOphalen:''}</small></td>
+      <td>${o.klant.straat}<br><small>${o.klant.postcode} ${o.klant.stad}</small></td>
+      <td>${o.type||'–'}</td>
+      <td>
+        <select class="badge-status badge-${o.status.toLowerCase()}" onchange="wijzigOrderStatus(${o.id},this.value)"
+          style="border:none;font-size:0.75rem;font-weight:700;cursor:pointer;padding:3px 8px;border-radius:12px;appearance:auto;">
+          ${statussen.map(s=>`<option value="${s}" ${s===o.status?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </td>
+      <td><div class="acties">
+        <button class="btn btn-teal btn-klein" onclick="toonOrderbon(${o.id})">🖨️ Bon</button>
+        <button class="btn btn-blauw btn-klein" onclick="toonOrderDetail(${o.id})">👁️</button>
+        <button class="btn btn-rood btn-klein" onclick="verwijderOrder(${o.id})">🗑️</button>
+      </div></td>
+    </tr>`).join('');
+  renderBadge();
+}
+
+function wijzigOrderStatus(id, nieuweStatus) {
+  const orders = laadOrders();
+  const idx = orders.findIndex(o=>o.id===id);
+  if (idx>=0) { orders[idx].status = nieuweStatus; slaOrdersOp(orders); toonToast('Status: '+nieuweStatus); renderBadge(); }
+}
+
+function renderBadge() {
+  document.getElementById('badge-orders').textContent = laadOrders().filter(o=>o.status==='Nieuw').length;
+}
+
+// ============================================================
+//  NIEUWE ORDER WIZARD
+// ============================================================
+function resetNieuweOrder() {
+  orderMand = {}; huidigOrderId = null;
+  document.getElementById('stap-1').style.display='';
+  document.getElementById('stap-2').style.display='none';
+  document.getElementById('stap-3').style.display='none';
+  zetStapActief(1);
+  ['klant-voornaam','klant-achternaam','klant-telefoon','klant-email',
+   'klant-straat','klant-postcode','klant-stad','order-notities'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  document.getElementById('order-type').value='';
+  document.getElementById('order-datum-ophalen').value='';
+  document.getElementById('order-tijd-ophalen').value='09:00';
+  document.getElementById('order-datum-terugbrengen').value='';
+  document.getElementById('order-tijd-terugbrengen').value='18:00';
+}
+
+function zetStapActief(n) {
+  for (let i=1;i<=3;i++) {
+    const el=document.getElementById(`stap-${i}-indicator`);
+    if(!el) continue;
+    el.classList.remove('actief','klaar');
+    if (i<n) el.classList.add('klaar');
+    if (i===n) el.classList.add('actief');
+  }
+}
+
+function naarStap2() {
+  const verplicht = [
+    {id:'klant-voornaam', naam:'Voornaam'},
+    {id:'klant-achternaam', naam:'Achternaam'},
+    {id:'klant-telefoon', naam:'Telefoon'},
+    {id:'klant-straat', naam:'Straat + Huisnummer'},
+    {id:'klant-postcode', naam:'Postcode'},
+    {id:'klant-stad', naam:'Woonplaats'},
+    {id:'order-datum-ophalen', naam:'Datum ophalen'},
+  ];
+  for (const v of verplicht) {
+    if (!document.getElementById(v.id).value.trim()) {
+      toonToast(`Vul "${v.naam}" in`, 'fout');
+      document.getElementById(v.id).focus();
+      return;
+    }
+  }
+  document.getElementById('stap-1').style.display='none';
+  document.getElementById('stap-2').style.display='';
+  document.getElementById('stap-3').style.display='none';
+  zetStapActief(2);
+  renderOrderProductenGrid();
+  renderMand();
+  window.scrollTo(0,0);
+}
+
+function naarStap1() {
+  document.getElementById('stap-1').style.display='';
+  document.getElementById('stap-2').style.display='none';
+  document.getElementById('stap-3').style.display='none';
+  zetStapActief(1);
+  window.scrollTo(0,0);
+}
+
+function naarStap3() {
+  if (!Object.keys(orderMand).length) { toonToast('Selecteer minimaal één product','fout'); return; }
+  document.getElementById('stap-1').style.display='none';
+  document.getElementById('stap-2').style.display='none';
+  document.getElementById('stap-3').style.display='';
+  zetStapActief(3);
+  renderBevestigSamenvatting();
+  window.scrollTo(0,0);
+}
+
+// ============================================================
+//  PRODUCT GRID (order stap 2)
+// ============================================================
+function renderOrderProductenGrid() {
+  const producten = laadProducten();
+  const cats = ['Alle', ...new Set(producten.map(p=>p.categorie))];
+  document.getElementById('order-categorieen').innerHTML = cats.map(c =>
+    `<button class="cat-btn ${c===filterCategorie?'actief':''}" onclick="setCategorie('${c}')">${c}</button>`
+  ).join('');
+  renderProductTegelGrid(producten);
+}
+
+function setCategorie(cat) {
+  filterCategorie = cat;
+  renderOrderProductenGrid();
+}
+
+function filterProductenOrder() {
+  const zoek = document.getElementById('product-zoek').value.toLowerCase();
+  renderProductTegelGrid(laadProducten().filter(p=>
+    p.naam.toLowerCase().includes(zoek)||p.categorie.toLowerCase().includes(zoek)
+  ));
+}
+
+function renderProductTegelGrid(producten) {
+  const gefilterd = filterCategorie==='Alle' ? producten : producten.filter(p=>p.categorie===filterCategorie);
+  const grid = document.getElementById('order-producten-grid');
+  if (!gefilterd.length) {
+    grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--tekst-zacht);">Geen producten gevonden</div>';
+    return;
+  }
+  grid.innerHTML = gefilterd.map(p => {
+    const aantal = orderMand[p.id]||0;
+    return `<div class="product-tegel ${aantal>0?'geselecteerd':''}" onclick="voegProductToe('${p.id}')" title="${p.beschrijving||''}">
+      <div class="tegel-icoon">${p.icoon||'📦'}</div>
+      <div class="tegel-naam">${p.naam}</div>
+      <div class="tegel-prijs">${p.prijs>0?'€'+p.prijs.toFixed(2)+' '+p.eenheid:'op aanvraag'}</div>
+      ${aantal>0?`<div class="tegel-aantal">${aantal}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function voegProductToe(productId) {
+  orderMand[productId] = (orderMand[productId]||0)+1;
+  renderOrderProductenGrid();
+  renderMand();
+}
+
+function wijzigAantalMand(productId, delta) {
+  const nieuw = (orderMand[productId]||0)+delta;
+  if (nieuw<=0) delete orderMand[productId]; else orderMand[productId]=nieuw;
+  renderOrderProductenGrid();
+  renderMand();
+}
+
+function renderMand() {
+  const lijst  = document.getElementById('mand-items-lijst');
+  const totaal = document.getElementById('mand-totaal-rij');
+  const totaalBedrag = document.getElementById('mand-totaal-bedrag');
+  const producten = laadProducten();
+  const ids = Object.keys(orderMand);
+
+  if (!ids.length) {
+    lijst.innerHTML='<li class="mand-leeg">Nog niets geselecteerd</li>';
+    totaal.style.display='none'; return;
+  }
+  let som=0;
+  lijst.innerHTML = ids.map(id=>{
+    const p=producten.find(x=>x.id===id); if(!p) return '';
+    const aantal=orderMand[id]; som+=p.prijs*aantal;
+    return `<li class="mand-item">
+      <span style="font-size:1.3rem">${p.icoon||'📦'}</span>
+      <span class="mand-item-naam">${p.naam}</span>
+      <div class="aantal-control">
+        <button class="aantal-btn min" onclick="wijzigAantalMand('${id}',-1)">−</button>
+        <span class="aantal-waarde">${aantal}</span>
+        <button class="aantal-btn" onclick="wijzigAantalMand('${id}',1)">+</button>
+      </div>
+      ${p.prijs>0?`<span class="mand-item-prijs">€${(p.prijs*aantal).toFixed(2)}</span>`:''}
+    </li>`;
+  }).join('');
+  totaal.style.display='flex';
+  totaalBedrag.textContent = som>0 ? '€ '+som.toFixed(2).replace('.',',') : '–';
+}
+
+function haalKlantOp() {
+  return {
+    voornaam:           document.getElementById('klant-voornaam').value.trim(),
+    achternaam:         document.getElementById('klant-achternaam').value.trim(),
+    telefoon:           document.getElementById('klant-telefoon').value.trim(),
+    email:              document.getElementById('klant-email').value.trim(),
+    straat:             document.getElementById('klant-straat').value.trim(),
+    postcode:           document.getElementById('klant-postcode').value.trim(),
+    stad:               document.getElementById('klant-stad').value.trim(),
+    datumOphalen:       document.getElementById('order-datum-ophalen').value,
+    tijdOphalen:        document.getElementById('order-tijd-ophalen').value,
+    datumTerugbrengen:  document.getElementById('order-datum-terugbrengen').value,
+    tijdTerugbrengen:   document.getElementById('order-tijd-terugbrengen').value,
+    type:               document.getElementById('order-type').value,
+    notities:           document.getElementById('order-notities').value.trim(),
+  };
+}
+
+function renderBevestigSamenvatting() {
+  const producten = laadProducten();
+  const klant = haalKlantOp();
+  const ids = Object.keys(orderMand);
+  let som=0;
+  const regels = ids.map(id=>{
+    const p=producten.find(x=>x.id===id); if(!p) return '';
+    const aantal=orderMand[id]; som+=p.prijs*aantal;
+    return `<tr><td>${p.icoon||'📦'} ${p.naam}</td><td style="text-align:center">${aantal}×</td><td style="text-align:right">${p.prijs>0?'€'+(p.prijs*aantal).toFixed(2):'–'}</td></tr>`;
+  }).join('');
+  document.getElementById('bevestig-samenvatting').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;">
+      <div>
+        <h4 style="color:var(--teal);margin-bottom:8px;">👤 Klantgegevens</h4>
+        <p><strong>${klant.voornaam} ${klant.achternaam}</strong></p>
+        <p>📞 ${klant.telefoon}</p>
+        ${klant.email?`<p>✉️ ${klant.email}</p>`:''}
+        <p>📍 ${klant.straat}, ${klant.postcode} ${klant.stad}</p>
+      </div>
+      <div>
+        <h4 style="color:var(--teal);margin-bottom:8px;">📅 Afspraken</h4>
+        <p>📦 Ophalen: <strong>${formatDatum(klant.datumOphalen)}</strong> om ${klant.tijdOphalen}</p>
+        ${klant.datumTerugbrengen?`<p>↩️ Terugbrengen: <strong>${formatDatum(klant.datumTerugbrengen)}</strong> om ${klant.tijdTerugbrengen}</p>`:''}
+        ${klant.type?`<p>🎉 ${klant.type}</p>`:''}
+      </div>
+    </div>
+    <h4 style="color:var(--teal);margin-bottom:8px;">📦 Producten (${ids.length} regels)</h4>
+    <table style="width:100%;border-collapse:collapse;font-size:0.88rem;">
+      <thead><tr style="background:var(--lichtgrijs);">
+        <th style="padding:7px;text-align:left;">Product</th>
+        <th style="padding:7px;text-align:center;">Aantal</th>
+        <th style="padding:7px;text-align:right;">Bedrag</th>
+      </tr></thead>
+      <tbody>${regels}</tbody>
+      ${som>0?`<tfoot><tr style="border-top:2px solid var(--teal);font-weight:700;"><td colspan="2" style="padding:8px;">Totaal</td><td style="padding:8px;text-align:right;">€ ${som.toFixed(2).replace('.',',')}</td></tr></tfoot>`:''}
+    </table>
+    ${klant.notities?`<div style="margin-top:12px;padding:10px;background:#fffbf0;border:1px solid var(--goud);border-radius:8px;font-size:0.84rem;"><strong>📝 Notities:</strong> ${klant.notities}</div>`:''}`;
+}
+
+function slaOrderOp() {
+  const klant = haalKlantOp();
+  const orders = laadOrders();
+  const nieuwId = huidigOrderId || Date.now();
+  const producten = laadProducten();
+
+  const orderProducten = Object.entries(orderMand).map(([id,aantal])=>{
+    const p=producten.find(x=>x.id===id);
+    return p ? {id, naam:p.naam, icoon:p.icoon||'📦', prijs:p.prijs, eenheid:p.eenheid, categorie:p.categorie, aantal} : null;
+  }).filter(Boolean);
+
+  const som = orderProducten.reduce((s,p)=>s+p.prijs*p.aantal, 0);
+
+  const order = {
+    id: nieuwId, klant,
+    datumOphalen:       klant.datumOphalen,
+    tijdOphalen:        klant.tijdOphalen,
+    datumTerugbrengen:  klant.datumTerugbrengen,
+    tijdTerugbrengen:   klant.tijdTerugbrengen,
+    type:               klant.type,
+    notities:           klant.notities,
+    producten:          orderProducten,
+    totaal:             som,
+    status:             'Nieuw',
+    aangemaakt:         Date.now(),
+  };
+
+  if (huidigOrderId) {
+    const idx=orders.findIndex(o=>o.id===huidigOrderId);
+    if (idx>=0) orders[idx]=order; else orders.push(order);
+  } else {
+    orders.push(order);
+  }
+
+  slaOrdersOp(orders);
+  toonToast('✅ Order opgeslagen!');
+  renderBadge();
+  resetNieuweOrder();
+  setTimeout(()=>toonOrderbon(nieuwId), 300);
+}
+
+// ============================================================
+//  ORDERBON – stijl precies zoals voorbeeldbon Weideland
+// ============================================================
+function toonOrderbon(orderId) {
+  const order = laadOrders().find(o=>o.id===orderId);
+  if (!order) return;
+
+  const ordernr = String(order.id).slice(-4).padStart(4,'0');
+  const aangemaakt = new Date(order.aangemaakt).toLocaleDateString('nl-NL');
+
+  // Groepeer producten per categorie
+  const catMap = {};
+  order.producten.forEach(p=>{
+    const cat = p.categorie||'Overig';
+    if (!catMap[cat]) catMap[cat]=[];
+    catMap[cat].push(p);
+  });
+
+  let tabelRegels = '';
+  Object.entries(catMap).forEach(([cat, prods])=>{
+    tabelRegels += `<tr class="bon-cat-rij"><td colspan="4"><em>${cat}</em></td></tr>`;
+    prods.forEach(p=>{
+      tabelRegels += `<tr>
+        <td class="aantal-col center">${p.aantal}x</td>
+        <td>${p.naam}</td>
+        <td class="center"><span class="bon-checkbox"></span></td>
+        <td class="center"><span class="bon-checkbox"></span></td>
+      </tr>`;
+    });
+  });
+
+  document.getElementById('orderbon-inhoud').innerHTML = `
+    <div class="bon-header">
+      <div class="bon-logo-ring">🌿</div>
+      <div class="bon-bedrijfsnaam">Partyverhuur Weideland V.O.F</div>
+      <div class="bon-adres">Zuiderweg 3 &bull; 8395KV Steggerda &bull; 0621192946</div>
+      <div class="bon-contact">info@verhuur-weideland.nl</div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+      <div class="bon-titel" style="flex:1;border:none;border-top:2px solid var(--teal);border-bottom:2px solid var(--teal);text-align:center;padding:8px 0;margin:16px 10px 16px 0;">ORDERBON</div>
+      <div class="bon-ordernr" style="font-size:0.82rem;color:#666;">
+        <div>Order: <span class="bon-ordernr-waarde">#${ordernr}</span></div>
+        <div>Datum: ${aangemaakt}</div>
+        <div>Status: <strong>${order.status}</strong></div>
+      </div>
+    </div>
+
+    <div class="bon-klant-box">
+      <div class="bon-klant-cel"><span class="bon-klant-label">Naam klant:</span> <span class="bon-klant-waarde">${order.klant.voornaam} ${order.klant.achternaam}</span></div>
+      <div class="bon-klant-cel"><span class="bon-klant-label">Datum ophalen:</span> <span class="bon-klant-waarde">${formatDatum(order.datumOphalen)} ${order.tijdOphalen?'om '+order.tijdOphalen:''}</span></div>
+      <div class="bon-klant-cel"><span class="bon-klant-label">Telefoon:</span> <span class="bon-klant-waarde">${order.klant.telefoon}</span></div>
+      <div class="bon-klant-cel"><span class="bon-klant-label">Datum terugbrengen:</span> <span class="bon-klant-waarde">${order.datumTerugbrengen?formatDatum(order.datumTerugbrengen)+' om '+order.tijdTerugbrengen:''}</span></div>
+    </div>
+
+    ${order.klant.straat ? `<div style="font-size:0.82rem;color:#555;margin-bottom:14px;padding:6px 0;border-bottom:1px solid #ddd;">
+      <strong>📍 Afleveradres:</strong> ${order.klant.straat}, ${order.klant.postcode} ${order.klant.stad}
+      ${order.type?` &bull; 🎉 ${order.type}`:''}
+    </div>` : ''}
+
+    <table class="bon-tabel">
+      <thead>
+        <tr>
+          <th style="width:60px;" class="center">Aantal</th>
+          <th>Omschrijving</th>
+          <th style="width:95px;" class="center">Meegenomen</th>
+          <th style="width:95px;" class="center">Teruggebracht</th>
+        </tr>
+      </thead>
+      <tbody>${tabelRegels}</tbody>
+    </table>
+
+    <div style="margin-bottom:16px;">
+      <div class="bon-opmerkingen-titel">Opmerkingen:</div>
+      <div class="bon-opmerkingen-lijn">${order.notities||''}</div>
+      <div class="bon-opmerkingen-lijn"></div>
+    </div>
+
+    <div class="bon-handtekening-grid">
+      <div class="bon-handtekening-vak">
+        Handtekening klant:
+        <div class="bon-handtekening-lijn"></div>
+      </div>
+      <div class="bon-handtekening-vak">
+        Handtekening verhuurder:
+        <div class="bon-handtekening-lijn"></div>
+      </div>
+    </div>
+
+    <div class="bon-footer">
+      Op alle diensten en producten zijn onze algemene voorwaarden van toepassing.
+    </div>
+  `;
+
+  document.querySelectorAll('.pagina').forEach(p=>p.classList.remove('actief'));
+  document.getElementById('pagina-bon').classList.add('actief');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('actief'));
+  huidigePagina = 'bon';
+  window.scrollTo(0,0);
+}
+
+// ============================================================
+//  ORDER DETAIL MODAL
+// ============================================================
+function toonOrderDetail(orderId) {
+  const order = laadOrders().find(o=>o.id===orderId);
+  if (!order) return;
+  const statussen = ['Nieuw','Bevestigd','Onderweg','Geleverd','Opgehaald','Afgerond'];
+
+  document.getElementById('order-modal-titel').textContent =
+    `Order #${String(order.id).slice(-4).padStart(4,'0')} – ${order.klant.voornaam} ${order.klant.achternaam}`;
+  document.getElementById('order-modal-body').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+      <div>
+        <div class="form-groep"><label>Status wijzigen</label>
+          <select id="modal-status" style="width:100%;padding:9px 14px;border:2px solid var(--grijs);border-radius:8px;font-size:0.9rem;">
+            ${statussen.map(s=>`<option ${s===order.status?'selected':''}>${s}</option>`).join('')}
+          </select>
+        </div>
+        <p style="font-size:0.84rem;margin-top:6px;">📞 ${order.klant.telefoon}</p>
+        ${order.klant.email?`<p style="font-size:0.84rem;">✉️ ${order.klant.email}</p>`:''}
+      </div>
+      <div style="font-size:0.84rem;">
+        <p>📍 ${order.klant.straat}, ${order.klant.postcode} ${order.klant.stad}</p>
+        <p style="margin-top:6px;">📦 Ophalen: <strong>${formatDatum(order.datumOphalen)}</strong> om ${order.tijdOphalen}</p>
+        ${order.datumTerugbrengen?`<p>↩️ Terugbrengen: ${formatDatum(order.datumTerugbrengen)} om ${order.tijdTerugbrengen}</p>`:''}
+        ${order.type?`<p>🎉 ${order.type}</p>`:''}
+      </div>
+    </div>
+    <strong style="font-size:0.88rem;">Producten:</strong>
+    <ul style="margin-top:6px;list-style:none;">
+      ${order.producten.map(p=>`<li style="padding:3px 0;font-size:0.86rem;">${p.icoon} ${p.naam} – <strong>${p.aantal}×</strong></li>`).join('')}
+    </ul>
+    ${order.notities?`<div style="margin-top:10px;padding:9px;background:#fffbf0;border:1px solid var(--goud);border-radius:8px;font-size:0.83rem;"><strong>Notities:</strong> ${order.notities}</div>`:''}
+    <div style="display:flex;justify-content:flex-end;margin-top:12px;">
+      <button class="btn btn-teal" onclick="opslaanModalStatus(${order.id})">Status opslaan</button>
+    </div>`;
+
+  document.getElementById('order-modal-bon-btn').onclick = ()=>{ sluitModal('order-modal-overlay'); toonOrderbon(order.id); };
+  document.getElementById('order-modal-overlay').classList.add('open');
+}
+
+function opslaanModalStatus(orderId) {
+  const orders = laadOrders();
+  const idx = orders.findIndex(o=>o.id===orderId);
+  if (idx>=0) {
+    orders[idx].status = document.getElementById('modal-status').value;
+    slaOrdersOp(orders);
+    toonToast('Status opgeslagen');
+    renderBadge();
+    sluitModal('order-modal-overlay');
+    renderOrdersTabel();
+  }
+}
+
+// ============================================================
+//  VERWIJDEREN
+// ============================================================
+function verwijderOrder(orderId) {
+  const order = laadOrders().find(o=>o.id===orderId);
+  if (!order) return;
+  toonBevestig(`Order #${String(orderId).slice(-4).padStart(4,'0')} (${order.klant.voornaam} ${order.klant.achternaam}) verwijderen?`, ()=>{
+    slaOrdersOp(laadOrders().filter(o=>o.id!==orderId));
+    toonToast('Order verwijderd','fout');
+    renderOrdersTabel(); renderBadge();
+  });
+}
+
+// ============================================================
+//  PRODUCTBEHEER
+// ============================================================
+function renderProductenBeheer() {
+  const zoek = (document.getElementById('producten-zoek')?.value||'').toLowerCase();
+  let producten = laadProducten();
+  if (zoek) producten=producten.filter(p=>p.naam.toLowerCase().includes(zoek)||p.categorie.toLowerCase().includes(zoek));
+
+  const grid = document.getElementById('producten-beheer-grid');
+  const leeg = document.getElementById('producten-leeg');
+  if (!producten.length) { grid.innerHTML=''; leeg.style.display='block'; return; }
+  leeg.style.display='none';
+
+  grid.innerHTML = producten.map(p=>`
+    <div class="product-beheer-kaart">
+      <div class="product-beheer-top">
+        <div class="product-beheer-icoon">${p.icoon||'📦'}</div>
+        <div><div class="product-beheer-naam">${p.naam}</div><div class="product-beheer-cat">${p.categorie}</div></div>
+      </div>
+      <div class="product-beheer-body">
+        <div class="product-beheer-prijs">${p.prijs>0?'€ '+p.prijs.toFixed(2):'Op aanvraag'}</div>
+        <div class="product-beheer-eenheid">${p.eenheid}</div>
+        ${p.beschrijving?`<p style="font-size:0.76rem;color:var(--tekst-zacht);margin-top:6px;">${p.beschrijving}</p>`:''}
+        <div class="product-beheer-acties">
+          <button class="btn btn-goud btn-klein" onclick="openProductModal('${p.id}')">✏️ Bewerken</button>
+          <button class="btn btn-rood btn-klein" onclick="verwijderProduct('${p.id}')">🗑️</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function openProductModal(productId) {
+  document.getElementById('product-modal-id').value = productId||'';
+  if (productId) {
+    const p=laadProducten().find(x=>x.id===productId); if(!p) return;
+    document.getElementById('product-modal-titel').textContent='Product bewerken';
+    document.getElementById('pm-naam').value=p.naam;
+    document.getElementById('pm-categorie').value=p.categorie;
+    document.getElementById('pm-prijs').value=p.prijs;
+    document.getElementById('pm-eenheid').value=p.eenheid;
+    document.getElementById('pm-icoon').value=p.icoon||'';
+    document.getElementById('pm-beschrijving').value=p.beschrijving||'';
+  } else {
+    document.getElementById('product-modal-titel').textContent='Nieuw product toevoegen';
+    document.getElementById('pm-naam').value='';
+    document.getElementById('pm-categorie').value='';
+    document.getElementById('pm-prijs').value='';
+    document.getElementById('pm-eenheid').value='per stuk';
+    document.getElementById('pm-icoon').value='📦';
+    document.getElementById('pm-beschrijving').value='';
+  }
+  document.getElementById('product-modal-overlay').classList.add('open');
+}
+
+function slaProductOp() {
+  const naam=document.getElementById('pm-naam').value.trim();
+  const cat=document.getElementById('pm-categorie').value;
+  if (!naam) { toonToast('Vul productnaam in','fout'); return; }
+  if (!cat)  { toonToast('Kies een categorie','fout'); return; }
+  const id=document.getElementById('product-modal-id').value;
+  const product={
+    id: id||'p_'+Date.now(), naam, categorie:cat,
+    prijs: parseFloat(document.getElementById('pm-prijs').value)||0,
+    eenheid: document.getElementById('pm-eenheid').value,
+    icoon: document.getElementById('pm-icoon').value||'📦',
+    beschrijving: document.getElementById('pm-beschrijving').value.trim(),
+  };
+  let producten=laadProducten();
+  if (id) { const idx=producten.findIndex(p=>p.id===id); if(idx>=0) producten[idx]=product; else producten.push(product); }
+  else producten.push(product);
+  slaProductenOp(producten);
+  sluitModal('product-modal-overlay');
+  toonToast(id?'Product bijgewerkt':'Product toegevoegd');
+  renderProductenBeheer();
+}
+
+function verwijderProduct(productId) {
+  const p=laadProducten().find(x=>x.id===productId); if(!p) return;
+  toonBevestig(`Product "${p.naam}" verwijderen?`, ()=>{
+    slaProductenOp(laadProducten().filter(x=>x.id!==productId));
+    toonToast('Product verwijderd','fout');
+    renderProductenBeheer();
+  });
+}
+
+// ============================================================
+//  HULPFUNCTIES
+// ============================================================
+function formatDatum(d) {
+  if (!d) return '–';
+  const [j,m,dag]=d.split('-');
+  const mnd=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  return `${parseInt(dag)} ${mnd[parseInt(m)-1]} ${j}`;
+}
+
+function toonToast(tekst, type='ok') {
+  const el=document.createElement('div');
+  el.className=`toast${type==='fout'?' fout':''}`;
+  el.textContent=tekst;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(()=>el.remove(), 3100);
+}
+
+function sluitModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function toonBevestig(tekst, callback) {
+  document.getElementById('bevestig-tekst').textContent=tekst;
+  bevestigCallback=callback;
+  document.getElementById('bevestig-overlay').classList.add('open');
+}
+function sluitBevestig() { bevestigCallback=null; document.getElementById('bevestig-overlay').classList.remove('open'); }
+
+document.getElementById('bevestig-ok-btn').onclick=()=>{ if(bevestigCallback) bevestigCallback(); sluitBevestig(); };
+document.querySelectorAll('.modal-overlay,.bevestig-overlay').forEach(el=>{
+  el.addEventListener('click',e=>{ if(e.target===el) el.classList.remove('open'); });
+});
+
+init();
+</script>
+</body>
+</html>
